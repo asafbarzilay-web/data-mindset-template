@@ -4,7 +4,7 @@
 # Your own files (dashboard/boards.js, analysis/, SITE, supabase-config.js) are never touched
 # by the course, so the update merges cleanly.
 cd "$(dirname "$0")/.." || exit 1
-COURSE=https://github.com/asafbarzilay-web/data-mindset-template.git
+COURSE=${COURSE:-https://github.com/asafbarzilay-web/data-mindset-template.git}
 before=$(git rev-parse HEAD)
 git fetch -q "$COURSE" main 2>/dev/null || { echo "Could not reach the course. Try again later."; exit 1; }
 # A copy that was not forked from the course gets its updates from the lecturer instead.
