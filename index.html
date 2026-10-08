@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Platform</title>
+<!-- The team's home page: the current lesson, the tools, every lesson. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="core/coursework.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F4F4F2; color: #1C1C1A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 16px 80px; }
+  h1 { font-size: 32px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lead { color: #4A4A45; font-size: 16px; line-height: 1.6; margin: 0 0 28px; max-width: 680px; }
+  h2 { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6B6B66; margin: 34px 0 12px; }
+  .now { background: #1C1C1A; color: #fff; border-radius: 16px; padding: 24px 26px; }
+  .now .label { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #F6B38A; }
+  .now h3 { font-size: 24px; margin: 6px 0 6px; }
+  .now p { margin: 0 0 18px; color: #D6D6D2; font-size: 15px; line-height: 1.5; }
+  .now .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 10px 16px; border-radius: 10px; font-size: 14.5px; font-weight: 600; text-decoration: none; }
+  .btn.light { background: #fff; color: #1C1C1A; }
+  .btn.ghost { border: 1px solid #55554F; color: #fff; }
+  .btn.off { border: 1px dashed #4A4A45; color: #77776F; cursor: default; }
+  .now .opens { color: #F6B38A; }
+  .tag.unfinished { background: #FEF3C7; color: #92400E; }
+  .lesson.done .n { background: #1F7A3F; color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .tool { background: #fff; border: 1px solid #E2E2DE; border-radius: 14px; padding: 18px 20px; color: #1C1C1A; text-decoration: none; display: block; }
+  a.tool:hover { border-color: #C2410C; }
+  .tool b { display: block; font-size: 16px; margin-bottom: 4px; }
+  .tool span { color: #6B6B66; font-size: 13.5px; line-height: 1.5; }
+  .lessons { background: #fff; border: 1px solid #E2E2DE; border-radius: 14px; overflow: hidden; }
+  .lesson { display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-top: 1px solid #EEEEEA; }
+  .lesson:first-child { border-top: none; }
+  .lesson .n { width: 34px; height: 34px; border-radius: 50%; background: #F4F4F2; display: grid; place-items: center; font-weight: 700; font-size: 14px; flex: none; }
+  .lesson.current .n { background: #C2410C; color: #fff; }
+  .lesson .t { flex: 1; min-width: 0; }
+  .lesson .t b { font-size: 15px; }
+  .lesson .t div { color: #6B6B66; font-size: 13.5px; margin-top: 2px; }
+  .lesson .go { display: flex; gap: 14px; font-size: 14px; flex: none; }
+  .lesson .go a { color: #C2410C; text-decoration: none; }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+  .setup { flex: none; background: #fff; border: 1.5px solid #C2410C; border-radius: 12px; padding: 12px 16px; text-decoration: none; color: #1C1C1A; margin-top: 6px; }
+  .setup b { display: block; font-size: 15px; }
+  .setup span { font-size: 13px; color: #C2410C; }
+  .assist { flex: none; position: relative; margin-top: 6px; }
+  .assist summary { list-style: none; cursor: pointer; background: #fff; border: 1px solid #E2E2DE; border-radius: 12px; padding: 12px 16px; }
+  .assist summary::-webkit-details-marker { display: none; }
+  .assist summary b { display: block; font-size: 15px; }
+  .assist summary span { font-size: 13px; color: #C2410C; }
+  .assist ol { position: absolute; right: 0; top: calc(100% + 6px); z-index: 5; width: 300px; background: #fff; border: 1px solid #E2E2DE; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.08); margin: 0; padding: 14px 16px 14px 34px; font-size: 14px; line-height: 1.6; }
+  .tool .links { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .tool .links a { color: #C2410C; text-decoration: none; font-size: 14.5px; font-weight: 600; }
+  .tool .links small { display: block; color: #6B6B66; font-weight: 400; font-size: 13px; }
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .steps li { counter-increment: s; background: #fff; border: 1px solid #E2E2DE; border-radius: 14px; padding: 16px 18px 16px 52px; position: relative; font-size: 14px; line-height: 1.5; color: #4A4A45; }
+  .steps li::before { content: counter(s); position: absolute; left: 16px; top: 15px; width: 24px; height: 24px; border-radius: 50%; background: #1C1C1A; color: #fff; font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+  .steps .h { display: block; color: #1C1C1A; font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .steps code { background: #F4F4F2; padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+  .tip { font-size: 14px; color: #4A4A45; margin: 14px 2px 0; line-height: 1.6; }
+  .tip code { background: #E8E8E4; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+  @media (max-width: 600px) { .top { flex-direction: column; } }
+  .lesson.later .t b, .lesson.later .n { color: #A8A8A2; }
+  .lesson.later .t div { color: #B5B5AF; }
+  .lesson .go .locked { color: #A8A8A2; font-size: 13px; }
+  .now .again { margin: 14px 0 0; font-size: 14px; color: #A8A8A2; }
+  .now .again a { color: #F6B38A; text-decoration: none; }
+  .tag.done { background: #E8F5EC; color: #1F7A3F; }
+  .tool code { background: #F4F4F2; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: #FEF0E6; color: #C2410C; margin-left: 6px; }
+  @media (max-width: 600px) { .lesson { flex-wrap: wrap; } .lesson .go { width: 100%; padding-left: 50px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Your study platform</h1>
+      <p class="lead">An app that records how people use it, and a dashboard you grow into one whose every number you can prove.</p>
+    </div>
+    <a class="setup" id="setup" href="view.html?f=README.md" hidden><b>One-time setup</b><span>Do this before lesson 1 →</span></a>
+    <details class="assist" id="assist" hidden>
+      <summary><b>Your AI assistant</b><span>How to start it ↓</span></summary>
+      <ol>
+        <li>Claude app → <b>Code</b> → <b>+ New</b></li>
+        <li><b>Cloud → Data-mindset</b> → <b class="team">your team's repository</b></li>
+        <li>Ask: <i>"What are we working on?"</i></li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="now" id="now">Loading…</div>
+
+  <h2>Your tools</h2>
+  <div class="grid">
+    <a class="tool" href="dashboard/"><b>Your dashboard</b>
+      <span>Everything you build goes here.</span></a>
+    <div class="tool"><b>The app</b>
+      <div class="links"><a href="app/?test=1">Test run<small>your own visits, marked as tests</small></a>
+        <a href="app/">Participant link<small>what you share with real people</small></a></div></div>
+    <a class="tool" href="units/database-map.html"><b>The database</b>
+      <span>The four tables and every column.</span></a>
+  </div>
+  <div id="steps-block">
+  <h2>Start your AI assistant</h2>
+  <ol class="steps">
+    <li><span class="h">Open the Claude app.</span> Click <b>Code</b>, then <b>+ New</b>.</li>
+    <li><span class="h">Choose your repository.</span> Switch <b>Local</b> to <b>Cloud → Data-mindset</b>,
+      then pick <b class="team">your team's repository</b>.</li>
+    <li><span class="h">Start.</span> Ask: <i>"What are we working on?"</i> It should answer with your current lesson.</li>
+  </ol>
+  </div>
+
+  <h2>Lessons</h2>
+  <div class="lessons" id="lessons"></div>
+</div>
+<script>
+  // The team's repository name is the first part of this site's address.
+  const repo = location.hostname.endsWith('github.io') ? location.pathname.split('/')[1] : '';
+  if (repo) document.querySelectorAll('.team').forEach(el => { el.textContent = repo; });
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  Promise.all([
+    fetch('units/lessons.json', { cache: 'no-store' }).then(r => r.json()),
+    fetch('units/CURRENT', { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(t => t.trim()),
+    Coursework.summary().catch(() => ({}))
+  ]).then(([lessons, current, work]) => {
+    const cur = lessons.find(l => l.unit === current) || lessons.find(l => l.unit);
+    const brief = l => `view.html?f=units/${l.unit}.md`;
+    const checker = l => `checker/?lesson=${l.checker}`;
+    // Progress, from the team's database. A submitted memo means the lesson is done:
+    // the checker only allows submitting once every answer is right.
+    // A slides-only lesson (no checker) is done once the class has moved past it.
+    const isDone = l => !!(l.unit && (l.checker ? (work[l.checker] || {}).memoSubmitted : l.n < cur.n));
+    const rightSoFar = l => (work[l.checker] || {}).right || 0;
+    // A lesson before the current one that isn't done: open, marked, and always finishable.
+    const unfinished = l => !!(l.unit && l.checker && l.n < cur.n && !isDone(l));
+    const status = l => !l.unit || isDone(l) ? '' : unfinished(l) ? '<span class="tag unfinished">not finished</span>'
+      : rightSoFar(l) ? `<span class="tag">${rightSoFar(l)} right so far</span>` : '';
+    const next = lessons.slice(lessons.indexOf(cur) + 1).find(l => l.unit);
+    // The lesson in focus: the current one, or, once it is done, the next one (opening in class).
+    const focus = isDone(cur) && next ? next : cur;
+    const open = focus === cur;
+    const step = (label, href, primary, enabled) => enabled
+      ? `<a class="btn ${primary ? 'light' : 'ghost'}" href="${href}">${label}</a>`
+      : `<span class="btn off" title="Opens in class">${label}</span>`;
+    document.getElementById('now').innerHTML = `
+      <div class="label">${open ? 'You are on' : 'Up next'} · Lesson ${focus.n}</div>
+      <h3>${esc(focus.title)}</h3>
+      <p>${esc(focus.question)}${open ? '' : ' <span class="opens">Opens in your next class.</span>'}</p>
+      <div class="actions">
+        ${focus.slides ? step('1 · Class slides', esc(focus.slides), true, true) : ''}
+        ${focus.checker ? step('2 · The exercise', brief(focus), open && !focus.slides, open) : ''}
+        ${focus.checker ? step('3 · Check your answers', checker(focus), false, open) : ''}
+      </div>
+      ${lessons.filter(unfinished).map(l => `<p class="again">Lesson ${l.n} isn't finished yet. You can still finish it: <a href="${checker(l)}">checker and memo</a>.</p>`).join('')}
+      ${open ? '' : `<p class="again">✓ Lesson ${cur.n} done. Go back over it: ${[cur.slides && `<a href="${esc(cur.slides)}">slides</a>`, cur.checker && `<a href="${brief(cur)}">exercise</a>`, cur.checker && `<a href="${checker(cur)}">checker</a>`].filter(Boolean).join(' · ')}</p>`}`;
+    // Setup is needed before lesson 1 only: lesson 1 can't be done without it.
+    // Before lesson 1 is done: setup in the corner and the assistant's steps in full. After: a small tip.
+    const started = cur.n > 1 || isDone(cur);
+    document.getElementById('setup').hidden = started;
+    document.getElementById('assist').hidden = !started;
+    document.getElementById('steps-block').hidden = started;
+    document.getElementById('lessons').innerHTML = lessons.map(l => `
+      <div class="lesson ${l === focus ? 'current' : ''} ${isDone(l) ? 'done' : ''} ${l.unit ? '' : 'later'}">
+        <div class="n">${isDone(l) ? '✓' : l.n}</div>
+        <div class="t"><b>${esc(l.title)}</b>${l === focus ? `<span class="tag">${open ? 'now' : 'next'}</span>` : ''}${isDone(l) ? '<span class="tag done">done</span>' : ''}${status(l)}<div>${esc(l.question)}</div></div>
+        <div class="go">${!l.unit ? '' : l.n > cur.n
+          ? `${l.slides ? `<a href="${esc(l.slides)}">Slides</a>` : ''}${l.checker ? '<span class="locked">Exercise and checker open in class</span>' : ''}`
+          : `${l.slides ? `<a href="${esc(l.slides)}">Slides</a>` : ''}${l.checker ? `<a href="${brief(l)}">Exercise</a><a href="${checker(l)}">Checker</a>` : ''}`}</div>
+      </div>`).join('');
+  }).catch(() => { document.getElementById('now').textContent = 'Could not load the lessons.'; });
+</script>
+</body>
+</html>

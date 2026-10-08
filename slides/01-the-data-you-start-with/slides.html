@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Data You Start With</title>
+<link rel="stylesheet" href="../deck.css">
+<style>
+  .tbl4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .tbl4 .card { padding: 22px 22px; }
+  .tbl4 .card .lbl { font-family: ui-monospace, Menlo, monospace; font-size: 23px; }
+  .tbl4 .card .row1 { font-size: 26px; font-weight: 700; margin: 4px 0 10px; }
+  .tbl4 .card p { font-size: 19px; color: #4A4A45; }
+  .join { text-align: center; color: #6B6B66; font-size: 21px; margin-top: 22px; }
+  .join code, .mono { font-family: ui-monospace, Menlo, monospace; }
+  table.tl { font-size: 21px; }
+  table.tl td, table.tl th { padding: 8px 16px; text-align: left; }
+  table.tl td:first-child { color: #6B6B66; font-variant-numeric: tabular-nums; }
+  table.tl .t { font-family: ui-monospace, Menlo, monospace; font-size: 18px; color: #C2410C; }
+  table.db { font-size: 20px; }
+  table.db th, table.db td { text-align: left; padding: 8px 16px; }
+  table.db td { font-family: ui-monospace, Menlo, monospace; font-size: 18px; }
+  table.db .hl { background: #FEF0E6; }
+  .type { display: inline-block; font-size: 15px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: #EEEDE8; color: #4A4A45; margin-right: 6px; }
+  .side { display: grid; grid-template-columns: 1.15fr 1fr; gap: 36px; align-items: center; }
+  .side p, .side li { font-size: 23px; }
+  table.props { font-size: 17px; width: 100%; }
+  table.props th, table.props td { text-align: left; padding: 6px 12px; vertical-align: top; line-height: 1.35; }
+  table.props th { font-size: 14px; }
+  table.props td.c { font-family: ui-monospace, Menlo, monospace; font-weight: 700; white-space: nowrap; }
+  table.props td.c.key { color: #C2410C; }
+  table.props td.ex { font-family: ui-monospace, Menlo, monospace; font-size: 15px; color: #4A4A45; white-space: nowrap; }
+  table.props td.w { color: #B42318; font-size: 15.5px; }
+  table.props .type { font-size: 12.5px; padding: 1px 8px; }
+  .slide.dense { padding: 48px 72px; }
+  .slide.dense h2 { font-size: 40px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <section class="slide dark">
+    <p class="kicker">Lesson 1 · The data you start with</p>
+    <h1>What did the app<br>actually write down?</h1>
+    <p class="muted">Every number in this course is made of raw rows. Know them before you count them.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">A simple question</p>
+    <h2>Noa spends three minutes in Lumo, a reading app.</h2>
+    <p>She scrolls the home page, opens two articles, reads one to the end, saves it, and leaves.</p>
+    <p class="accent" style="font-size:34px;font-weight:700;margin-top:18px">What does Lumo's database know about those three minutes?</p>
+    <p class="muted small">Write your answer down before the next slide.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Recorded vs not</p>
+    <h2>If it isn't a row, it didn't happen</h2>
+    <div class="grid g2">
+      <div class="card"><div class="lbl good">Recorded</div>
+        <p>The visit itself: when, which device and browser, which link she came from.<br>
+           Every tap: which screen, where on it, what it landed on.<br>
+           Every choice the app reports: what, and after how long.<br>
+           A sign-in, as a scrambled account id.</p></div>
+      <div class="card"><div class="lbl bad">Not recorded</div>
+        <p>What she looked at. How far she scrolled. That she read the article to the end.
+           What she thought of it. Anything between two taps.</p>
+        <p style="margin-top:12px"><b>"She read it" is not in the data.</b> "She opened it, and 4 minutes passed before her next tap" is.</p></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">What a database is</p>
+    <h2>Six words you need</h2>
+    <div class="side">
+      <div>
+        <table class="db">
+          <tr><th>session_id</th><th>platform</th><th>started_at</th></tr>
+          <tr class="hl"><td>a41f…</td><td>mobile</td><td>10:02:01</td></tr>
+          <tr><td>e19b…</td><td><span class="muted">null</span></td><td>10:11:20</td></tr>
+        </table>
+        <table class="db" style="margin-top:22px">
+          <tr><th>clicks: session_id</th><th>step</th></tr>
+          <tr class="hl"><td>a41f…</td><td>home</td></tr>
+          <tr class="hl"><td>a41f…</td><td>article</td></tr>
+        </table>
+      </div>
+      <div>
+        <p><b>Table</b>: one kind of thing (visits). <b>Row</b>: one of them. <b>Column</b>: one fact about each.</p>
+        <p><b>Key</b>: the column that names a row, <code>session_id</code>. No two rows share it.</p>
+        <p><b>Type</b>: what a column holds: <span class="type">text</span><span class="type">number</span><span class="type">time</span><span class="type">true/false</span>. <b><code>null</code> means "not known"</b>, never zero or "no".</p>
+        <p><b>Join</b>: a tap carries its visit's key, so one visit links to many taps. Following that link brings them together.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Four tables</p>
+    <h2>One visit, and everything that happened in it</h2>
+    <div class="tbl4">
+      <div class="card"><div class="lbl">sessions</div><div class="row1">a visit</div><p>device, browser, source link, start time, and two flags: test run, practice data</p></div>
+      <div class="card"><div class="lbl">clicks</div><div class="row1">a tap</div><p>the screen, x and y in the app's frame, what it hit (<span class="mono">none</span> = nothing)</p></div>
+      <div class="card"><div class="lbl">selections</div><div class="row1">a choice</div><p>the screen, what was chosen, how long the screen was open before it</p></div>
+      <div class="card"><div class="lbl">identities</div><div class="row1">a sign-in</div><p>a scrambled id: same account, same value, never the email</p></div>
+    </div>
+    <p class="join">Every row of the last three carries the visit's <code>session_id</code>. That is how you put a visit back together.</p>
+  </section>
+
+  <section class="slide dense">
+    <p class="kicker">Table 1 of 4 · sessions</p>
+    <h2>One row = one visit</h2>
+    <table class="props">
+      <tr><th>column</th><th>type</th><th>what it holds</th><th>example</th><th>watch out</th></tr>
+        <tr><td class="c key">session_id</td><td><span class="type">id</span></td><td>The name of this visit. Every row in the other three tables points to it.</td><td class="ex">a41f…</td><td class="w"></td></tr>
+        <tr><td class="c">user_id</td><td><span class="type">id</span></td><td>The browser, remembered in its storage across visits.</td><td class="ex">7c2e…</td><td class="w">Not a person. Another device or a private window is a new id.</td></tr>
+        <tr><td class="c">app</td><td><span class="type">text</span></td><td>Which app wrote the row.</td><td class="ex">lumo</td><td class="w">Several studies can share one table. Always filter on it.</td></tr>
+        <tr><td class="c">platform</td><td><span class="type">text</span></td><td>mobile or desktop, from what the browser reports about the device.</td><td class="ex">mobile</td><td class="w">Can be null: neither mobile nor desktop.</td></tr>
+        <tr><td class="c">browser</td><td><span class="type">text</span></td><td>safari, chrome, firefox, edge or other.</td><td class="ex">safari</td><td class="w"></td></tr>
+        <tr><td class="c">source</td><td><span class="type">text</span></td><td>Where the link came from: <code>?src=</code> in it.</td><td class="ex">instagram</td><td class="w">null = untagged link. One source can arrive under two names.</td></tr>
+        <tr><td class="c">screen_w</td><td><span class="type">number</span></td><td>Width of the window, in pixels.</td><td class="ex">390</td><td class="w"></td></tr>
+        <tr><td class="c">started_at</td><td><span class="type">time</span></td><td>When the visit began.</td><td class="ex">10:02:01</td><td class="w"></td></tr>
+        <tr><td class="c">is_test</td><td><span class="type">true/false</span></td><td>Your own runs, through the <code>?test=1</code> link.</td><td class="ex">false</td><td class="w">Leave them out of every result.</td></tr>
+        <tr><td class="c">is_synthetic</td><td><span class="type">true/false</span></td><td>The course's practice data.</td><td class="ex">false</td><td class="w">Real visits have both flags false.</td></tr>
+    </table>
+    <p class="muted small" style="margin-top:14px">Ten columns, and the two flags decide which visits count at all.</p>
+  </section>
+
+  <section class="slide dense">
+    <p class="kicker">Table 2 of 4 · clicks</p>
+    <h2>One row = one tap</h2>
+    <table class="props">
+      <tr><th>column</th><th>type</th><th>what it holds</th><th>example</th><th>watch out</th></tr>
+        <tr><td class="c key">session_id</td><td><span class="type">id</span></td><td>The visit this tap belongs to.</td><td class="ex">a41f…</td><td class="w"></td></tr>
+        <tr><td class="c">step</td><td><span class="type">text</span></td><td>The screen it happened on.</td><td class="ex">article</td><td class="w"></td></tr>
+        <tr><td class="c">overlay</td><td><span class="type">text</span></td><td>A layer open on top of the screen, if any: a menu, a keyboard.</td><td class="ex">null</td><td class="w">null = nothing on top.</td></tr>
+        <tr><td class="c">x</td><td><span class="type">number</span></td><td>Across the app's frame: 0 = left edge, 1 = right.</td><td class="ex">0.42</td><td class="w">The app's frame, not the screen: phone and laptop compare.</td></tr>
+        <tr><td class="c">y</td><td><span class="type">number</span></td><td>Down the app's frame: 0 = top, 1 = bottom.</td><td class="ex">0.18</td><td class="w"></td></tr>
+        <tr><td class="c">seq</td><td><span class="type">number</span></td><td>1st, 2nd, 3rd tap on <i>this screen</i> in this visit.</td><td class="ex">2</td><td class="w">Restarts on every screen. Order a visit by time, not by seq.</td></tr>
+        <tr><td class="c">hit</td><td><span class="type">text</span></td><td>What it landed on: <code>option</code> (anything pressable), <code>back</code> (back or close), <code>none</code>.</td><td class="ex">none</td><td class="w">none = a tap on nothing. Kept on purpose: it shows expectation.</td></tr>
+        <tr><td class="c">created_at</td><td><span class="type">time</span></td><td>When the tap happened.</td><td class="ex">10:02:31</td><td class="w"></td></tr>
+    </table>
+    <p class="muted small" style="margin-top:14px">Every tap, including the ones that hit nothing.</p>
+  </section>
+
+  <section class="slide dense">
+    <p class="kicker">Table 3 of 4 · selections</p>
+    <h2>One row = one choice</h2>
+    <table class="props">
+      <tr><th>column</th><th>type</th><th>what it holds</th><th>example</th><th>watch out</th></tr>
+        <tr><td class="c key">session_id</td><td><span class="type">id</span></td><td>The visit this choice belongs to.</td><td class="ex">a41f…</td><td class="w"></td></tr>
+        <tr><td class="c">step</td><td><span class="type">text</span></td><td>The screen the choice was made on.</td><td class="ex">home</td><td class="w"></td></tr>
+        <tr><td class="c">value</td><td><span class="type">text</span></td><td>What was chosen: an item, an answer, a destination.</td><td class="ex">article-14</td><td class="w"></td></tr>
+        <tr><td class="c">duration_ms</td><td><span class="type">number</span></td><td>Time on that screen before choosing, in thousandths of a second.</td><td class="ex">5200</td><td class="w">Includes reading and hesitating. 5,200 = 5.2 seconds.</td></tr>
+        <tr><td class="c">created_at</td><td><span class="type">time</span></td><td>When the choice was made.</td><td class="ex">10:02:06</td><td class="w"></td></tr>
+    </table>
+    <p class="muted small" style="margin-top:14px">A choice is what the app reports, not a tap: a tap on a card can produce both a click and a selection.</p>
+  </section>
+
+  <section class="slide dense">
+    <p class="kicker">Table 4 of 4 · identities</p>
+    <h2>One row = one sign-in</h2>
+    <table class="props">
+      <tr><th>column</th><th>type</th><th>what it holds</th><th>example</th><th>watch out</th></tr>
+        <tr><td class="c key">session_id</td><td><span class="type">id</span></td><td>The visit in which the sign-in happened.</td><td class="ex">a41f…</td><td class="w"></td></tr>
+        <tr><td class="c">account</td><td><span class="type">text</span></td><td>The account, scrambled: the same account always gives the same value.</td><td class="ex">9be0d1…</td><td class="w">Never the email, and can't be turned back into one.</td></tr>
+        <tr><td class="c">created_at</td><td><span class="type">time</span></td><td>When the sign-in happened.</td><td class="ex">10:04:57</td><td class="w">Only visits that signed in have a row here.</td></tr>
+    </table>
+    <p class="muted small" style="margin-top:14px">This is the only table that can link one browser to another: the same account on both.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">One visit, as rows</p>
+    <h2>Noa's three minutes</h2>
+    <table class="tl">
+      <tr><th>time</th><th>table</th><th>what the row says</th></tr>
+      <tr><td>10:02:01</td><td class="t">sessions</td><td>a visit on mobile, Safari, from an Instagram link</td></tr>
+      <tr><td>10:02:06</td><td class="t">clicks</td><td>home · hit an article card</td></tr>
+      <tr><td>10:02:06</td><td class="t">selections</td><td>home · chose article 14 · after 5.2 s</td></tr>
+      <tr><td>10:02:31</td><td class="t">clicks</td><td>article · hit <b>none</b> (tapped the headline; it isn't a link)</td></tr>
+      <tr><td>10:02:40</td><td class="t">clicks</td><td>article · hit back</td></tr>
+      <tr><td>10:03:02</td><td class="t">clicks</td><td>home · hit an article card</td></tr>
+      <tr><td>10:04:55</td><td class="t">clicks</td><td>article · hit save</td></tr>
+      <tr><td>10:04:57</td><td class="t">identities</td><td>signed in (saving needs an account)</td></tr>
+    </table>
+    <p class="muted small" style="margin-top:16px">This is the whole story the data can tell. Everything you will ever report about Noa is built from these eight rows.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Four misreadings</p>
+    <h2>The columns that look like something else</h2>
+    <div class="grid g2">
+      <div class="card"><div class="lbl mono">user_id</div><p>Looks like a person. It is a <b>browser</b>. Noa on her laptop tomorrow is a new one.</p></div>
+      <div class="card"><div class="lbl">a sessions row</div><p>Looks like someone using the app. It is a <b>visit</b>, and some visits have no taps at all.</p></div>
+      <div class="card"><div class="lbl mono">is_test · is_synthetic</div><p>Look like the same flag. <b>Test</b> = your own runs. <b>Synthetic</b> = the course's practice data. Real visits: both false.</p></div>
+      <div class="card"><div class="lbl mono">app</div><p>Looks like it's always yours. It is <b>whichever app wrote the row</b>. Two studies can share a table.</p></div>
+    </div>
+  </section>
+
+  <section class="slide dark">
+    <p class="kicker">Principle · Capture</p>
+    <p class="quote">The page loaded. No error appeared.<br><span class="accent">Zero rows were saved.</span></p>
+    <p class="muted" style="margin-top:22px">Lumo changed one database rule on a Friday. For two weeks every tap was silently refused, and the app looked perfect. The only proof capture works: write a row, then find it.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Who may do what</p>
+    <h2>Nobody can damage collected data, including you</h2>
+    <div class="grid g3">
+      <div class="card"><div class="lbl">The app</div><p>may <b>add</b> rows. Never read, change or delete them.</p></div>
+      <div class="card"><div class="lbl">You, signed in</div><p>may <b>read</b> rows. Never change or delete them.</p></div>
+      <div class="card"><div class="lbl">Your analysis</div><p>is built <b>on top</b>, as views in its own space. The raw rows stay as they were recorded.</p></div>
+    </div>
+    <p class="muted small" style="margin-top:22px">The same goes for your AI assistant. It cannot "clean up" a row it didn't like.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Two spaces</p>
+    <h2>The raw tables, and your views on top</h2>
+    <div class="grid g2">
+      <div class="card"><div class="lbl">Raw tables</div><p>The four tables the app writes into. Exactly what was recorded, never changed. The same for every team.</p></div>
+      <div class="card"><div class="lbl">Your views, in <code>analysis</code></div><p>A <b>view</b> is a saved question: "the photo visits, without test runs". It holds no data of its own. Ask it, and it reads the raw tables at that moment, so it is never out of date.</p></div>
+    </div>
+    <p class="muted small" style="margin-top:22px">Everything you build in this course is a view. The raw tables are the evidence; the views are your reading of it.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Principle · One definition, one place</p>
+    <h2>Lumo's dashboard had three numbers called "readers"</h2>
+    <div class="grid g3">
+      <div class="card"><div class="num">812</div><p>built in week 2, from visits</p></div>
+      <div class="card"><div class="num">655</div><p>built in week 5, excluding test runs</p></div>
+      <div class="card"><div class="num">590</div><p>built in week 7, from accounts</p></div>
+    </div>
+    <p style="margin-top:24px">None was wrong. Nobody knew which one the board report used. <b>Rule:</b> every number is a view, carrying its one-sentence definition. A second definition of "readers" is a second view, with a different name.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Your exercise</p>
+    <h2>Know the rows, then build one view</h2>
+    <ul>
+      <li>Load the practice data. Read <b>the database on one page</b>, then draw it from memory.</li>
+      <li>Use the app with <span class="mono">?test=1</span>. Find your own visit in the raw rows. Does it match what you did?</li>
+      <li>Build <b>Replay a visit</b>: paste a <span class="mono">session_id</span>, see that visit tap by tap. It is your first view.</li>
+      <li>Pass the checker. Then write the memo.</li>
+    </ul>
+    <p class="muted small" style="margin-top:18px">You will use the replay panel in every lesson after this one. It is how you check a number: by following one participant.</p>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Lesson 1 · Summary</p>
+    <div class="summary">
+      <div>
+        <p class="lbl">What you learnt</p>
+        <ul>
+        <li>The app records four things: <b>visits, taps, choices and sign-ins</b>. Anything else, it doesn't know.</li>
+        <li>A visit is put back together through its <code>session_id</code>, in order of time.</li>
+        <li><code>user_id</code> is a browser, not a person. <code>is_test</code> and <code>is_synthetic</code> mark different rows. <code>app</code> says whose row it is.</li>
+        <li>Capture is proven by <b>writing a row and finding it</b>, never by the absence of an error.</li>
+        <li>Every number is a <b>view</b> with its definition, so the database does the counting.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="lbl">Your self-study</p>
+        <div class="links">
+        <a data-site="view.html?f=units/unit-01.md">The exercise <span>what to build and hand in</span></a>
+        <a data-site="units/database-map.html">The database on one page <span>the map</span></a>
+        <a data-site="app/?test=1">A test run of the app <span>?test=1</span></a>
+        <a data-site="dashboard/">Your dashboard <span>build here</span></a>
+        <a data-site="checker/?lesson=lesson-01">The checker <span>8 questions</span></a>
+        </div>
+        <div class="handin"><b>Hand in:</b> the checker, all correct, and the half-page memo. Its questions are at the end of the exercise.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script src="../deck.js"></script>
+</body>
+</html>
