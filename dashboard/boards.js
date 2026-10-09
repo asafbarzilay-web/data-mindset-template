@@ -10,7 +10,7 @@ const BOARDS = {
     { title: 'Taps per screen', view: 'example_taps_per_screen', render: async (el) => {
         const { data, error } = await db.schema('analysis').from('example_taps_per_screen')
           .select('*').order('taps', { ascending: false });
-        if (error) { el.innerHTML = '<p class="muted">Run <code>analysis/example_taps_per_screen.sql</code> in Supabase (SQL Editor) to see this example.</p>'; return; }
+        if (error) { el.innerHTML = '<p class="muted">Ask your assistant to build <code>analysis/example_taps_per_screen.sql</code> to see this example.</p>'; return; }
         el.innerHTML = `<div class="scroll"><table><thead><tr><th>app</th><th>screen</th><th>taps</th></tr></thead><tbody>${
           data.map(r => `<tr><td>${esc(r.app)}</td><td>${esc(r.screen)}</td><td class="num">${r.taps}</td></tr>`).join('')}</tbody></table></div>`;
       } }
