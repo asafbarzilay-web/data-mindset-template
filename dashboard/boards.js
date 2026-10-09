@@ -1,6 +1,7 @@
 // ===================================================================
 // YOUR PANELS. This file is yours; the dashboard page itself is the course's.
-// One list per lesson; a panel is { title, view, render(el) }.
+// One list per lesson; a panel is { title, view, render(el) }, plus own: true for a panel the
+// team added on its own (beyond the exercise): it shows under "On your own" on the lesson board.
 // render(el) fills the card's body, reading ONE view in `analysis`:
 //   db.schema('analysis').from('<view>').select('*')
 // The page shows numbers; the view does the counting.
