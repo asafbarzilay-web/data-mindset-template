@@ -18,6 +18,7 @@ const BOARDS = {
   ],
   'unit-01': [],
   'unit-02': [],
+  'unit-03': [],
   'unit-08': []
 };
 
